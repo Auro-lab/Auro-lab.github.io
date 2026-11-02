@@ -1,4 +1,4 @@
-const username = "yourusername"; // change this!
+const username = "Auro-lab";
 const list = document.getElementById("repo-list");
 
 async function loadRepos() {
