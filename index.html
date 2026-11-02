@@ -3,30 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Your Name | Portfolio</title>
+  <title>Auro-lab | Portfolio</title>
+  <meta name="description" content="Projects and code by Auro-lab.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <header>
-    <h1>Your Name</h1>
-    <p>Aspiring developer. I build things.</p>
-  </header>
-
-  <section id="about">
-    <h2>About Me</h2>
-    <p>Write 2-3 sentences about yourself here.</p>
+  <section class="hero">
+    <canvas id="net" aria-hidden="true"></canvas>
+    <div class="hero-text">
+      <h1 id="name" aria-label="Auro-lab">Auro-lab</h1>
+      <p class="tag">I build things with code and test ideas in public. Every experiment lives in my repositories.</p>
+      <div class="actions">
+        <a class="btn primary" href="#projects">See my projects</a>
+        <a class="btn" href="https://github.com/Auro-lab" target="_blank" rel="noopener">Open GitHub</a>
+      </div>
+    </div>
   </section>
 
-  <section id="projects">
-    <h2>Projects</h2>
-    <div id="repo-list">Loading projects...</div>
-  </section>
+  <main>
+    <section id="projects">
+      <h2>Projects</h2>
+      <div id="repo-list">Loading projects...</div>
+    </section>
 
-  <section id="contact">
-    <h2>Contact</h2>
-    <p><a href="mailto:you@email.com">you@email.com</a></p>
-  </section>
+    <section id="about">
+      <h2>About</h2>
+      <p>Write two or three sentences about yourself here: what you study or do, what you're learning, and what you want to build next.</p>
+    </section>
+
+    <section id="contact">
+      <h2>Contact</h2>
+      <p>Want to work together or just say hi? <a href="mailto:you@email.com">you@email.com</a></p>
+    </section>
+  </main>
+
+  <footer>Built with HTML, CSS and JavaScript. Hosted on GitHub Pages.</footer>
 
   <script src="script.js"></script>
 </body>
