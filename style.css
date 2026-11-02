@@ -1,0 +1,34 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  line-height: 1.6;
+}
+
+header, section {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { margin-bottom: 1rem; color: #38bdf8; }
+
+a { color: #38bdf8; }
+
+.repo-card {
+  background: #1e293b;
+  padding: 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.repo-card:hover {
+  transform: translateY(-3px);
+}
