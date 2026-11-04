@@ -1,5 +1,5 @@
 const username = "Auro-lab";
-const featured = ["Servicenode_auro", "Website-Project"];
+const featured = ["Service_Management_for_tech", "Locked_In"];
 
 /* 1. Name: letters rise in once on load */
 const nameEl = document.getElementById("name");
