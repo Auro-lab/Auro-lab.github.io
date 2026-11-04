@@ -1,4 +1,5 @@
 const username = "Auro-lab";
+const featured = ["Servicenode_auro", "Website-Project"];
 
 /* 1. Name: letters rise in once on load */
 const nameEl = document.getElementById("name");
@@ -140,8 +141,10 @@ function wireShot(img) {
   try {
     const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
     if (!res.ok) throw new Error(res.status);
-    const repos = (await res.json())
-      .filter(r => !r.fork && r.name.toLowerCase() !== `${username.toLowerCase()}.github.io`);
+    const all = await res.json();
+    const repos = featured
+    .map(n => all.find(r => r.name.toLowerCase() === n.toLowerCase()))
+    .filter(Boolean);
     if (!repos.length) { list.textContent = "No public projects yet. Push your first repo and it will appear here."; return; }
 
     list.innerHTML = repos.map(r => {
