@@ -1,5 +1,4 @@
 const username = "Auro-lab";
-const featured = ["Service_Management_for_tech", "Locked_In"];
 
 /* 1. Name: letters rise in once on load */
 const nameEl = document.getElementById("name");
@@ -116,59 +115,176 @@ nameEl.innerHTML = [...nameEl.textContent]
   }
 })();
 
-/* 3. Project cards with screenshots */
+/* 3. Project cards with screenshot galleries */
+
+/* EDIT YOUR PROJECTS HERE. "folder" is the name of the screenshots subfolder. */
+const projects = [
+  {
+    folder: "Service_Management_for_tech",
+    title: "Service Management for Tech",
+    description: "A web application for managing technical service workflows.",
+    tech: ["HTML", "Node.js", "Bootstrap", "MySQL"],
+    live: ""   // optional: paste a live site link like "https://example.com"
+  },
+  {
+    folder: "Locked_In",
+    title: "Locked In",
+    description: "A learning tool that supports reading comprehension for students with low learning skills.",
+    tech: ["HTML", "Flask", "CSS", "MySQL"],
+    live: ""
+  }
+];
+
 const list = document.getElementById("repo-list");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const exts = ["png", "jpg", "webp"];
+const MAX_SHOTS = 6;
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const gallery = {};
 
-function placeholder(name) {
-  const d = document.createElement("div");
-  d.className = "ph";
-  d.innerHTML = `<strong>${esc(name)}</strong><span>Screenshot coming soon</span>`;
-  return d;
-}
-
-function wireShot(img) {
-  let i = 0;
-  img.addEventListener("error", () => {
-    i++;
-    if (i < exts.length) img.src = `screenshots/${encodeURIComponent(img.dataset.name)}.${exts[i]}`;
-    else img.replaceWith(placeholder(img.dataset.name));
+function probe(src) {
+  return new Promise(res => {
+    const i = new Image();
+    i.onload = () => res(true);
+    i.onerror = () => res(false);
+    i.src = src;
   });
 }
 
-(async function loadRepos() {
-  try {
-    const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
-    if (!res.ok) throw new Error(res.status);
-    const all = await res.json();
-    const repos = featured
-    .map(n => all.find(r => r.name.toLowerCase() === n.toLowerCase()))
-    .filter(Boolean);
-    if (!repos.length) { list.textContent = "No public projects yet. Push your first repo and it will appear here."; return; }
-
-    list.innerHTML = repos.map(r => {
-      const live = /^https?:\/\//.test(r.homepage || "") ? r.homepage : "";
-      const date = new Date(r.pushed_at).toLocaleDateString("en", { month: "short", year: "numeric" });
-      return `
-      <article class="repo">
-        <a class="shot" href="${esc(live || r.html_url)}" target="_blank" rel="noopener" aria-label="Open ${esc(r.name)}">
-          <img src="screenshots/${encodeURIComponent(r.name)}.png" data-name="${esc(r.name)}" alt="Screenshot of ${esc(r.name)}" loading="lazy">
-        </a>
-        <div class="repo-body">
-          <h3>${esc(r.name)}</h3>
-          <p>${esc(r.description) || "No description yet."}</p>
-          <small>${esc(r.language) || "Mixed"} &middot; Updated ${date}</small>
-          <div class="links">
-            <a href="${esc(r.html_url)}" target="_blank" rel="noopener">View code</a>
-            ${live ? `<a href="${esc(live)}" target="_blank" rel="noopener">Live site</a>` : ""}
-          </div>
-        </div>
-      </article>`;
-    }).join("");
-
-    list.querySelectorAll(".shot img").forEach(wireShot);
-  } catch {
-    list.innerHTML = `Couldn't load projects right now. <a href="https://github.com/${username}" target="_blank" rel="noopener">View them on GitHub</a>.`;
+async function findShots(folder) {
+  const base = `screenshots/${encodeURIComponent(folder)}`;
+  const found = [];
+  for (let n = 1; n <= MAX_SHOTS; n++) {
+    let hit = null;
+    for (const e of exts) {
+      const src = `${base}/${n}.${e}`;
+      if (await probe(src)) { hit = src; break; }
+    }
+    if (!hit) break;
+    found.push(hit);
   }
-})();
+  return found;
+}
+
+/* Lightbox */
+const lb = document.createElement("div");
+lb.className = "lb";
+lb.hidden = true;
+lb.setAttribute("role", "dialog");
+lb.setAttribute("aria-modal", "true");
+lb.setAttribute("aria-label", "Project screenshots");
+lb.innerHTML = `
+  <button class="lb-close" aria-label="Close gallery">&times;</button>
+  <button class="lb-nav prev" aria-label="Previous screenshot">&#8249;</button>
+  <figure><img alt=""><figcaption></figcaption></figure>
+  <button class="lb-nav next" aria-label="Next screenshot">&#8250;</button>`;
+document.body.appendChild(lb);
+
+const lbImg = lb.querySelector("img");
+const lbCap = lb.querySelector("figcaption");
+const btnClose = lb.querySelector(".lb-close");
+const btnPrev = lb.querySelector(".prev");
+const btnNext = lb.querySelector(".next");
+let shots = [], idx = 0, title = "", lastFocus = null;
+
+function show(i, dir = 0) {
+  idx = (i + shots.length) % shots.length;
+  lbImg.src = shots[idx];
+  lbImg.alt = `${title} screenshot ${idx + 1}`;
+  lbCap.textContent = `${title}  ·  ${idx + 1} / ${shots.length}`;
+  const many = shots.length > 1;
+  btnPrev.hidden = btnNext.hidden = !many;
+  if (dir && !reduceMotion) {
+    lbImg.animate(
+      [{ opacity: 0, transform: `translateX(${dir * 50}px)` }, { opacity: 1, transform: "none" }],
+      { duration: 280, easing: "cubic-bezier(.2,.9,.2,1)" }
+    );
+  }
+}
+
+function openGallery(name, imgs) {
+  title = name; shots = imgs; lastFocus = document.activeElement;
+  show(0);
+  lb.hidden = false;
+  document.body.style.overflow = "hidden";
+  btnClose.focus();
+}
+
+function closeGallery() {
+  lb.hidden = true;
+  document.body.style.overflow = "";
+  if (lastFocus) lastFocus.focus();
+}
+
+btnPrev.addEventListener("click", () => show(idx - 1, -1));
+btnNext.addEventListener("click", () => show(idx + 1, 1));
+btnClose.addEventListener("click", closeGallery);
+lb.addEventListener("click", e => { if (e.target === lb) closeGallery(); });
+
+document.addEventListener("keydown", e => {
+  if (lb.hidden) return;
+  if (e.key === "Escape") closeGallery();
+  else if (e.key === "ArrowLeft") show(idx - 1, -1);
+  else if (e.key === "ArrowRight") show(idx + 1, 1);
+  else if (e.key === "Tab") {
+    const items = [btnClose, btnPrev, btnNext].filter(b => !b.hidden);
+    const pos = items.indexOf(document.activeElement);
+    e.preventDefault();
+    items[(pos + (e.shiftKey ? -1 : 1) + items.length) % items.length].focus();
+  }
+});
+
+let touchX = null;
+lb.addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
+lb.addEventListener("touchend", e => {
+  if (touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 50) show(idx + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+  touchX = null;
+});
+
+list.addEventListener("click", e => {
+  const b = e.target.closest(".shot");
+  if (!b) return;
+  const imgs = gallery[b.dataset.folder];
+  if (imgs && imgs.length) openGallery(b.dataset.title, imgs);
+});
+
+function placeholder(label) {
+  const d = document.createElement("div");
+  d.className = "ph";
+  d.innerHTML = `<strong>${esc(label)}</strong><span>Screenshots coming soon</span>`;
+  return d;
+}
+
+/* Build the cards */
+list.innerHTML = projects.map(p => {
+  const live = /^https?:\/\//.test(p.live || "") ? p.live : "";
+  return `
+  <article class="repo">
+    <button class="shot" type="button" data-folder="${esc(p.folder)}" data-title="${esc(p.title)}" aria-label="View screenshots of ${esc(p.title)}"></button>
+    <div class="repo-body">
+      <h3>${esc(p.title)}</h3>
+      <p>${esc(p.description)}</p>
+      <div class="tags">
+        ${(p.tech || []).map(t => `<span>${esc(t)}</span>`).join("")}
+      </div>
+      ${live ? `<div class="links"><a href="${esc(live)}" target="_blank" rel="noopener">Live site</a></div>` : ""}
+    </div>
+  </article>`;
+}).join("");
+
+/* Load screenshots for each card */
+list.querySelectorAll(".shot").forEach(async btn => {
+  const found = await findShots(btn.dataset.folder);
+  gallery[btn.dataset.folder] = found;
+  if (!found.length) { btn.appendChild(placeholder(btn.dataset.title)); btn.style.cursor = "default"; return; }
+  const img = document.createElement("img");
+  img.src = found[0];
+  img.alt = `Cover screenshot of ${btn.dataset.title}`;
+  btn.appendChild(img);
+  const badge = document.createElement("span");
+  badge.className = "count";
+  badge.textContent = found.length > 1 ? `${found.length} screenshots · click to view` : "Click to view";
+  btn.appendChild(badge);
+});
