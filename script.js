@@ -6,7 +6,7 @@ nameEl.innerHTML = [...nameEl.textContent]
   .map((c, i) => `<span style="animation-delay:${i * 80}ms" aria-hidden="true">${c}</span>`)
   .join("");
 
-/* 2. 3D night scene: centered glowing orb */
+/* 2. D night scene: centered glowing orb */
 (function scene3D() {
   if (!window.THREE) return;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -120,17 +120,31 @@ nameEl.innerHTML = [...nameEl.textContent]
 /* EDIT YOUR PROJECTS HERE. "folder" is the name of the screenshots subfolder. */
 const projects = [
   {
-    folder: "Service_Management_for_tech",
+    folder: "Locked_In",                      // <- was "Service_Management_for_tech"
     title: "Service Management for Tech",
     description: "A web application for managing technical service workflows.",
     tech: ["HTML", "Node.js", "Bootstrap", "MySQL"],
-    live: ""   // optional: paste a live site link like "https://example.com"
+    live: ""
   },
   {
-    folder: "Locked_In",
+    folder: "Service_Management_for_tech",    // <- was "Locked_In"
     title: "Locked In",
     description: "A learning tool that supports reading comprehension for students with low learning skills.",
     tech: ["HTML", "Flask", "CSS", "MySQL"],
+    live: ""
+  },
+    {
+    folder: "Soon",
+    title: "New Project Coming Soon",
+    description: "A new project is in progress. Check back soon.",
+    tech: ["A simple game"],
+    live: ""
+  },
+  {
+    folder: "Soon",
+    title: "New Project Coming Soon",
+    description: "A new project is in progress. Check back soon.",
+    tech: ["Secret"],
     live: ""
   }
 ];
@@ -157,14 +171,17 @@ async function findShots(folder) {
   for (let n = 1; n <= MAX_SHOTS; n++) {
     let hit = null;
     for (const e of exts) {
-      const src = `${base}/${n}.${e}`;
-      if (await probe(src)) { hit = src; break; }
+      for (const src of [`${base}_${n}.${e}`, `${base}/${n}.${e}`]) {
+        if (await probe(src)) { hit = src; break; }
+      }
+      if (hit) break;
     }
     if (!hit) break;
     found.push(hit);
   }
   return found;
 }
+
 
 /* Lightbox */
 const lb = document.createElement("div");
